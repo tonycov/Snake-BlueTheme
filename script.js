@@ -187,7 +187,7 @@
     if (score < target) {
       extra = 'You have failed to reach the target score';
     } else {
-      extra = `Well done, you passed the target score of ${target}!`;
+      extra = `Well done!! 👏 You passed the target score of ${target}`;
     }
 
     // Include both the original message/score and the extra line (rendered with a line break)
