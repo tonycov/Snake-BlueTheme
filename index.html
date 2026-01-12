@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nokia Snake — Green Edition</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Nokia Snake — Green Edition</h1>
+
+    <div class="hud">
+      <div class="score">Score: <span id="score">0</span></div>
+      <div class="speed">Speed: <span id="speed">0</span> moves/sec</div>
+    </div>
+
+    <canvas id="game" width="400" height="400" aria-label="Snake game canvas"></canvas>
+
+    <div class="controls">
+      <button id="startBtn">Start / Restart</button>
+      <p class="hint">Use the arrow keys to control the snake. Don't reverse direction directly.</p>
+    </div>
+
+    <div id="overlay" class="overlay hidden">
+      <div class="overlay-content">
+        <h2 id="overlayTitle">Game Over</h2>
+        <p id="overlayMsg">Press Start to play again.</p>
+        <button id="overlayBtn">Restart</button>
+      </div>
+    </div>
+
+    <footer>
+      <small>Classic Nokia Snake — green theme. Each food increases size and makes the snake a little faster.</small>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
