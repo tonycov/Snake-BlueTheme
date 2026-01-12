@@ -3,26 +3,44 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nokia Snake — Green Edition</title>
+  <meta name="theme-color" content="#04122a" />
+  <title>Nokia Snake — Blue Edition</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Nokia Snake — Green Edition</h1>
+    <h1>Nokia Snake — Blue Edition</h1>
 
     <div class="hud">
       <div class="score">Score: <span id="score">0</span></div>
       <div class="speed">Speed: <span id="speed">0</span> moves/sec</div>
     </div>
 
-    <canvas id="game" width="400" height="400" aria-label="Snake game canvas"></canvas>
+    <canvas id="game" width="400" height="400" aria-label="Snake game canvas" tabindex="0"></canvas>
+
+    <!-- Mobile on-screen controls (visible on small screens) -->
+    <div class="mobile-controls" id="mobileControls">
+      <div class="dpad" role="group" aria-label="On-screen directional controls">
+        <div></div>
+        <button class="dpad-btn" data-dir="up" aria-label="Up" type="button">▲</button>
+        <div></div>
+
+        <button class="dpad-btn" data-dir="left" aria-label="Left" type="button">◀</button>
+        <div></div>
+        <button class="dpad-btn" data-dir="right" aria-label="Right" type="button">▶</button>
+
+        <div></div>
+        <button class="dpad-btn" data-dir="down" aria-label="Down" type="button">▼</button>
+        <div></div>
+      </div>
+    </div>
 
     <div class="controls">
       <button id="startBtn">Start / Restart</button>
-      <p class="hint">Use the arrow keys to control the snake. Don't reverse direction directly.</p>
+      <p class="hint">Use the arrow keys or on-screen controls to control the snake. Don't reverse direction directly.</p>
     </div>
 
-    <div id="overlay" class="overlay hidden">
+    <div id="overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-labelledby="overlayTitle" aria-describedby="overlayMsg">
       <div class="overlay-content">
         <h2 id="overlayTitle">Game Over</h2>
         <p id="overlayMsg">Press Start to play again.</p>
@@ -31,7 +49,7 @@
     </div>
 
     <footer>
-      <small>Classic Nokia Snake — green theme. Each food increases size and makes the snake a little faster.</small>
+      <small>Classic Nokia Snake — blue theme. Each food increases size and makes the snake a little faster.</small>
     </footer>
   </div>
 

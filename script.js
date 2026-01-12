@@ -1,6 +1,5 @@
-// Nokia Snake — Green Edition
-// Grid-based snake on a canvas. Arrow keys control the snake.
-// Each food increases the snake length and slightly increases movement speed.
+// Nokia Snake — Blue Edition
+// Grid-based snake on a canvas. Arrow keys and on-screen D-pad control the snake.
 
 (() => {
   const canvas = document.getElementById('game');
@@ -13,23 +12,26 @@
   const overlayTitle = document.getElementById('overlayTitle');
   const overlayMsg = document.getElementById('overlayMsg');
   const overlayBtn = document.getElementById('overlayBtn');
+  const mobileControls = document.getElementById('mobileControls');
+
+  const container = document.querySelector('.container');
 
   // Game settings
   const gridSize = 20; // number of cells per row/column
-  const cell = canvas.width / gridSize; // pixel size of each cell
+  let cell = 0;        // pixel size of each cell (calculated on resize)
 
-  const initialSpeed = 5; // moves per second (keeps it slow -> easy to control)
-  const speedIncrease = 0.3; // additional moves/sec after each food (small)
+  const initialSpeed = 5; // moves per second
+  const speedIncrease = 0.3;
   const maxSpeed = 25;
 
-  // Colors (green scheme)
+  // Colors (blue scheme)
   const colors = {
-    bg: '#072617',
-    grid: '#0b3f1b',
-    snakeHead: '#adebad',
-    snakeBody: '#55c16a',
-    food: '#dfffe6',
-    border: '#053216'
+    bg: '#031428',
+    grid: '#052e44',
+    snakeHead: '#9fe9ff',
+    snakeBody: '#3fb0ff',
+    food: '#e6fbff',
+    border: '#022033'
   };
 
   // Game state
@@ -40,17 +42,24 @@
   let score = 0;
   let speed = initialSpeed;
   let moveInterval = null;
-  let lastTick = 0;
   let running = false;
   let growPending = 0;
 
+  function resizeCanvas() {
+    // Make the canvas square using the computed CSS size for crisp scaling.
+    // We use the actual displayed width (clientWidth) for internal resolution.
+    const maxSize = Math.min(400, container.clientWidth - 36);
+    const size = Math.max(160, Math.floor(maxSize)); // clamp to reasonable minimum
+    canvas.width = size;
+    canvas.height = size;
+    cell = canvas.width / gridSize;
+    draw(); // redraw at new size
+  }
+
   // Initialize or reset the game
   function reset() {
-    // Ensure head is the first element and neck is behind it (opposite of dir)
     const cx = Math.floor(gridSize / 2);
     const cy = Math.floor(gridSize / 2);
-
-    // With initial dir {x:1,y:0} the neck should be to the left of the head.
     snake = [
       { x: cx, y: cy },           // head
       { x: cx - 1, y: cy },       // neck (behind head)
@@ -66,7 +75,6 @@
   }
 
   function spawnFood() {
-    // find a free cell
     let tries = 0;
     while (true) {
       const x = Math.floor(Math.random() * gridSize);
@@ -75,17 +83,14 @@
         food = { x, y };
         return;
       }
-      if (++tries > 1000) {
-        // no free cell (very full) -> end
-        break;
-      }
+      if (++tries > 1000) break;
     }
   }
 
   function drawCell(x, y, color, inset = 0) {
-    const px = x * cell + inset;
-    const py = y * cell + inset;
-    const size = cell - inset * 2;
+    const px = Math.round(x * cell + inset);
+    const py = Math.round(y * cell + inset);
+    const size = Math.max(1, Math.round(cell - inset * 2));
     ctx.fillStyle = color;
     ctx.fillRect(px, py, size, size);
   }
@@ -95,7 +100,7 @@
     ctx.fillStyle = colors.bg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // subtle grid (optional)
+    // subtle grid
     ctx.strokeStyle = 'rgba(0,0,0,0.05)';
     ctx.lineWidth = 1;
     for (let i = 0; i <= gridSize; i++) {
@@ -111,11 +116,11 @@
     }
 
     // draw food
-    drawCell(food.x, food.y, colors.food, 4);
+    drawCell(food.x, food.y, colors.food, Math.max(2, Math.floor(cell * 0.1)));
     // draw snake body
     for (let i = 0; i < snake.length; i++) {
       const part = snake[i];
-      const inset = i === 0 ? 3 : 5; // head is slightly larger
+      const inset = i === 0 ? Math.max(2, Math.floor(cell * 0.08)) : Math.max(3, Math.floor(cell * 0.12));
       const color = i === 0 ? colors.snakeHead : colors.snakeBody;
       drawCell(part.x, part.y, color, inset);
     }
@@ -123,7 +128,6 @@
 
   function updateHUD() {
     scoreEl.textContent = score;
-    // show speed rounded to 1 decimal
     speedEl.textContent = (Math.round(speed * 10) / 10).toFixed(1);
   }
 
@@ -132,7 +136,6 @@
     if (snake.length > 1) {
       const head = snake[0];
       const neck = snake[1];
-      // if nextDir would reverse, ignore it
       if (!(head.x + nextDir.x === neck.x && head.y + nextDir.y === neck.y)) {
         dir = nextDir;
       }
@@ -142,7 +145,7 @@
 
     const newHead = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
 
-    // check wall collision (no wrapping — classic behavior)
+    // check wall collision (no wrapping)
     if (newHead.x < 0 || newHead.x >= gridSize || newHead.y < 0 || newHead.y >= gridSize) {
       gameOver('You hit the wall!');
       return;
@@ -154,22 +157,18 @@
       return;
     }
 
-    // add new head
     snake.unshift(newHead);
 
     // check food
     if (newHead.x === food.x && newHead.y === food.y) {
       score += 1;
-      growPending += 1; // grow by not removing tail this tick
-      // increase speed a bit
+      growPending += 1;
       speed = Math.min(maxSpeed, speed + speedIncrease);
       spawnFood();
       updateHUD();
-      // reset the interval so speed change takes effect
       restartTicker();
     }
 
-    // handle growth (if no growth pending, remove tail)
     if (growPending > 0) {
       growPending--;
     } else {
@@ -185,12 +184,10 @@
     stopTicker();
   }
 
-  // Ticker using setInterval; we recreate interval when speed changes
   function restartTicker() {
     stopTicker();
     const ms = 1000 / speed;
     moveInterval = setInterval(step, ms);
-    lastTick = performance.now();
     running = true;
   }
 
@@ -202,10 +199,32 @@
     running = false;
   }
 
-  // input handling
+  // Input helpers
+  function setDirectionByVector(nd) {
+    // prevent reversing directly when length>1
+    if (snake.length > 1) {
+      const head = snake[0];
+      const neck = snake[1];
+      if (head.x + nd.x === neck.x && head.y + nd.y === neck.y) {
+        return;
+      }
+    }
+    nextDir = nd;
+  }
+
+  function setDirectionFromName(name) {
+    const mapping = {
+      up: { x: 0, y: -1 },
+      down: { x: 0, y: 1 },
+      left: { x: -1, y: 0 },
+      right: { x: 1, y: 0 },
+    };
+    const nd = mapping[name];
+    if (nd) setDirectionByVector(nd);
+  }
+
   window.addEventListener('keydown', (e) => {
     const key = e.key;
-    // handle arrows only
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
       e.preventDefault();
       const mapping = {
@@ -215,23 +234,30 @@
         ArrowRight: { x: 1, y: 0 },
       };
       const nd = mapping[key];
-      // prevent reversing directly: we only set nextDir
-      if (snake.length > 1) {
-        const head = snake[0];
-        const neck = snake[1];
-        // if nd is reverse of current dir, ignore
-        if (head.x + nd.x === neck.x && head.y + nd.y === neck.y) {
-          return;
-        }
-      }
-      nextDir = nd;
+      setDirectionByVector(nd);
     } else if (key === ' ' || key === 'Enter') {
-      // space or enter to restart if not running
-      if (!running) {
-        startGame();
-      }
+      if (!running) startGame();
     }
   });
+
+  // D-pad / touch controls
+  function attachDpadHandlers() {
+    const buttons = document.querySelectorAll('.dpad-btn');
+    buttons.forEach(btn => {
+      // pointerdown covers mouse/touch/stylus
+      btn.addEventListener('pointerdown', (ev) => {
+        ev.preventDefault();
+        const dirName = btn.dataset.dir;
+        setDirectionFromName(dirName);
+      }, { passive: false });
+      // also support click for non-touch
+      btn.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const dirName = btn.dataset.dir;
+        setDirectionFromName(dirName);
+      });
+    });
+  }
 
   startBtn.addEventListener('click', startGame);
   overlayBtn.addEventListener('click', startGame);
@@ -240,6 +266,8 @@
     reset();
     draw();
     restartTicker();
+    // move focus to canvas so arrow keys work immediately
+    canvas.focus();
   }
 
   function showOverlay(title, msg) {
@@ -252,11 +280,18 @@
     overlay.classList.add('hidden');
   }
 
-  // initial draw
+  // Setup & initial draw
+  window.addEventListener('resize', () => {
+    resizeCanvas();
+  });
+
+  // Call once on load
+  attachDpadHandlers();
+  resizeCanvas();
   reset();
   draw();
 
-  // expose to window for debugging (optional)
+  // Expose for debugging (optional)
   window.snakeGame = {
     start: startGame,
     stop: () => { stopTicker(); },
