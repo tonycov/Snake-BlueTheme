@@ -180,7 +180,18 @@
 
   function gameOver(message) {
     running = false;
-    showOverlay('Game Over', `${message} Score: ${score}`);
+
+    // Build additional target-score message
+    const target = 6;
+    let extra;
+    if (score < target) {
+      extra = 'You have failed to reach the target score';
+    } else {
+      extra = `Well done, you passed the target score of ${target}!`;
+    }
+
+    // Include both the original message/score and the extra line (rendered with a line break)
+    showOverlay('Game Over', `${message} Score: ${score}<br>${extra}`);
     stopTicker();
   }
 
@@ -272,7 +283,8 @@
 
   function showOverlay(title, msg) {
     overlayTitle.textContent = title;
-    overlayMsg.textContent = msg;
+    // Allow msg to contain simple HTML (we only use this internally for a <br>)
+    overlayMsg.innerHTML = msg;
     overlay.classList.remove('hidden');
   }
 
